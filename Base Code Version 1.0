@@ -1,0 +1,38 @@
+function sendEmails() {
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getRange("B2:D500").getValues();
+
+
+  var statuses = [];
+
+
+  var batchSize = 3; // Adjust as needed
+  for (var i = 0; i < data.length; i += batchSize) {
+    var batch = data.slice(i, i + batchSize);
+
+    for (var j = 0; j < batch.length; j++) {
+      var subject = batch[j][0];
+      var body = batch[j][1];
+      var recipient = batch[j][2];
+
+      try {
+        if (subject && body && recipient) {
+          GmailApp.sendEmail(recipient, subject, body, { from: 'john.c@techsalerator.com' });
+          statuses.push("Sent successfully");
+        } else {
+          statuses.push("Missing values");
+        }
+      } catch (error) {
+        Logger.log("Error sending email: " + error.toString());
+        statuses.push("Error sending");
+        Utilities.sleep(60000); // Pause longer after errors
+      }
+
+      Utilities.sleep(15000); // Adjust pause duration as needed
+    }
+  }
+
+
+  sheet.getRange(2, 6, statuses.length, 1).setValues([statuses]);
+}
